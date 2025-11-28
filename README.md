@@ -2,6 +2,8 @@
 
 A multi-agent LLM framework for automated data analysis, filtering, and visualization of scientific paper data from SciSciNet. This system uses LangChain to coordinate specialized agents that understand natural language queries, query databases, perform statistical analysis, and generate interactive Vega-Lite visualizations.
 
+[Demo video here](https://drive.google.com/file/d/1kbB5_BI-j1WKyL4q8_LRmz67eDCRk3GH/view?usp=drive_link)
+
 ## Project Overview
 
 This project implements a web-based chatbot interface that allows users to interact with a scientific paper database using natural language. The system automatically:
@@ -11,6 +13,7 @@ This project implements a web-based chatbot interface that allows users to inter
 3. **Analyzes results** - Performs statistical analysis and data aggregation
 4. **Generates visualizations** - Creates interactive Vega-Lite charts with filtering and hovering interactions
 
+[![web_page](./asserts/web_page.png)]
 ## Tech Stack
 
 ### Backend
@@ -27,6 +30,79 @@ This project implements a web-based chatbot interface that allows users to inter
 - **Vega-Lite** - Interactive visualization library
 - **Axios** - HTTP client
 - **ReactMarkdown** - Markdown rendering
+
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 16+
+- AWS credentials configured (`aws configure`)
+- Access to AWS Bedrock in `us-east-2` region
+
+### 1. Data Setup
+
+Download data from SciSciNet by GCS:
+
+```bash
+cd Project1
+mkdir -p data
+gsutil -m cp gs://sciscinet-neo/v2/sciscinet_papers.parquet ./data/
+gsutil -m cp gs://sciscinet-neo/v2/sciscinet_paperrefs.parquet ./data/
+gsutil -m cp gs://sciscinet-neo/v2/sciscinet_paper_author_affiliation.parquet ./data/
+gsutil -m cp gs://sciscinet-neo/v2/sciscinet_link_patents.parquet ./data/
+gsutil -m cp gs://sciscinet-neo/v2/sciscinet_fields.parquet ./data/
+gsutil -m cp gs://sciscinet-neo/v2/sciscinet_paperfields.parquet ./data/
+```
+
+Then create sample data by running following files, then it should be in `backend/data/` directory.
+
+```bash
+cd backend
+python processors/sample_creator.py
+```
+
+This will create filtered sample parquet files from the full SciSciNet dataset.
+
+### 2. Environment Configuration
+
+**AWS Credentials:**
+AWS Bedrock uses AWS IAM credentials (not API keys). Configure them using:
+
+```bash
+aws configure
+```
+
+This will prompt for:
+- AWS Access Key ID
+- AWS Secret Access Key
+- Default region (use `us-east-2`)
+- Default output format (use `json`)
+
+The credentials are stored in `~/.aws/credentials` and are automatically used by boto3.
+
+
+### 3. Backend Setup
+
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+```
+
+Backend runs on `http://localhost:5000`
+
+### 4. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Frontend runs on `http://localhost:3000`
+
 
 ## Architecture
 
@@ -274,77 +350,6 @@ All generated charts include:
   - Retraction status: Not retracted
   - Author position: First author
 - **Query Execution**: DuckDB for efficient SQL queries on Parquet files
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.10+
-- Node.js 16+
-- AWS credentials configured (`aws configure`)
-- Access to AWS Bedrock in `us-east-2` region
-
-### 1. Data Setup
-
-Download data from SciSciNet by GCS:
-
-```bash
-cd Project1
-mkdir -p data
-gsutil -m cp gs://sciscinet-neo/v2/sciscinet_papers.parquet ./data/
-gsutil -m cp gs://sciscinet-neo/v2/sciscinet_paperrefs.parquet ./data/
-gsutil -m cp gs://sciscinet-neo/v2/sciscinet_paper_author_affiliation.parquet ./data/
-gsutil -m cp gs://sciscinet-neo/v2/sciscinet_link_patents.parquet ./data/
-gsutil -m cp gs://sciscinet-neo/v2/sciscinet_fields.parquet ./data/
-gsutil -m cp gs://sciscinet-neo/v2/sciscinet_paperfields.parquet ./data/
-```
-
-Then create sample data by running following files, then it should be in `backend/data/` directory.
-
-```bash
-cd backend
-python processors/sample_creator.py
-```
-
-This will create filtered sample parquet files from the full SciSciNet dataset.
-
-### 2. Environment Configuration
-
-**AWS Credentials:**
-AWS Bedrock uses AWS IAM credentials (not API keys). Configure them using:
-
-```bash
-aws configure
-```
-
-This will prompt for:
-- AWS Access Key ID
-- AWS Secret Access Key
-- Default region (use `us-east-2`)
-- Default output format (use `json`)
-
-The credentials are stored in `~/.aws/credentials` and are automatically used by boto3.
-
-
-### 3. Backend Setup
-
-```bash
-cd backend
-pip install -r requirements.txt
-python app.py
-```
-
-Backend runs on `http://localhost:5000`
-
-### 4. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-Frontend runs on `http://localhost:3000`
 
 ## Features
 
