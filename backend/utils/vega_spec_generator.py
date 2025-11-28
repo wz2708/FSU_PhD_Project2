@@ -25,6 +25,27 @@ def create_bar_chart(data: List[Dict], x_field: str, y_field: str,
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
         "description": title,
         "data": {"values": data},
+        # Selection for filtering - must be defined before transform
+        "selection": {
+            brush_name: {
+                "type": "interval",
+                "encodings": ["x"]
+            },
+            click_name: {
+                "type": "point",
+                "on": "click",
+                "toggle": True,
+                "nearest": True
+            }
+        },
+        # Transform to actually filter data based on selection
+        "transform": [
+            {
+                "filter": {
+                    "selection": brush_name
+                }
+            }
+        ],
         "mark": {
             "type": "bar",
             "cursor": "pointer",
@@ -47,19 +68,6 @@ def create_bar_chart(data: List[Dict], x_field: str, y_field: str,
                 {"field": x_field, "type": x_type, "title": x_title},
                 {"field": y_field, "type": "quantitative", "title": y_title, "format": ",.0f"}
             ]
-        },
-        # Selection for filtering and highlighting - use unique names
-        "selection": {
-            brush_name: {
-                "type": "interval",
-                "encodings": ["x"]
-            },
-            click_name: {
-                "type": "point",
-                "on": "click",
-                "toggle": True,
-                "nearest": True
-            }
         },
         "width": 600,
         "height": 400
@@ -100,11 +108,12 @@ def create_line_chart(data: List[Dict], x_field: str, y_field: str,
     brush_name = f"brush_{unique_id}"
     click_name = f"click_{unique_id}"
     
-    # Simplified line chart - define selection before encoding to ensure proper reference
+    # Line chart with filtering capability
     spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
         "description": title,
         "data": {"values": data},
+        # Selection for filtering - must be defined before transform
         "selection": {
             brush_name: {
                 "type": "interval",
@@ -116,6 +125,14 @@ def create_line_chart(data: List[Dict], x_field: str, y_field: str,
                 "nearest": True
             }
         },
+        # Transform to actually filter data based on selection
+        "transform": [
+            {
+                "filter": {
+                    "selection": brush_name
+                }
+            }
+        ],
         "mark": {
             "type": "line",
             "stroke": "#4A90E2",
@@ -143,14 +160,7 @@ def create_line_chart(data: List[Dict], x_field: str, y_field: str,
             "tooltip": [
                 {"field": x_field, "type": "quantitative", "title": x_title, "format": ",.0f"},
                 {"field": y_field, "type": "quantitative", "title": y_title, "format": ",.0f"}
-            ],
-            "opacity": {
-                "condition": {
-                    "selection": brush_name,
-                    "value": 1
-                },
-                "value": 0.7
-            }
+            ]
         },
         "width": 600,
         "height": 400
@@ -175,6 +185,27 @@ def create_histogram(data: List[Dict], field: str, title: str = "") -> Dict:
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
         "description": title,
         "data": {"values": data},
+        # Selection for filtering - must be defined before transform
+        "selection": {
+            brush_name: {
+                "type": "interval",
+                "encodings": ["x"]
+            },
+            click_name: {
+                "type": "point",
+                "on": "click",
+                "toggle": True,
+                "nearest": True
+            }
+        },
+        # Transform to actually filter data based on selection
+        "transform": [
+            {
+                "filter": {
+                    "selection": brush_name
+                }
+            }
+        ],
         "mark": {
             "type": "bar",
             "cursor": "pointer",
@@ -195,13 +226,8 @@ def create_histogram(data: List[Dict], field: str, title: str = "") -> Dict:
                 "type": "quantitative",
                 "title": "Count"
             },
-            # Conditional color based on selection
             "color": {
-                "condition": {
-                    "selection": brush_name,
-                    "value": "#4A90E2"
-                },
-                "value": "lightgray"
+                "value": "#4A90E2"
             },
             # Tooltip for hovering interaction
             "tooltip": [
@@ -219,19 +245,6 @@ def create_histogram(data: List[Dict], field: str, title: str = "") -> Dict:
                     "format": ",.0f"
                 }
             ]
-        },
-        # Selection for filtering and highlighting - use unique names
-        "selection": {
-            brush_name: {
-                "type": "interval",
-                "encodings": ["x"]
-            },
-            click_name: {
-                "type": "point",
-                "on": "click",
-                "toggle": True,
-                "nearest": True
-            }
         },
         "width": 600,
         "height": 400
