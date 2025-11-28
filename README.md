@@ -414,137 +414,8 @@ Project2/
 └── README.md
 ```
 
-## API Endpoints
 
-### POST `/api/chat/message`
-
-Send a natural language query and receive analysis results with visualization.
-
-**Request:**
-```json
-{
-  "message": "show me the number of papers by field"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Analysis complete...",
-  "chart_spec": { /* Vega-Lite specification */ },
-  "stats": { /* Statistics */ },
-  "query_type": "bar"
-}
-```
-
-## Technical Implementation Details
-
-### ReAct Pattern Implementation
-
-Both the Orchestrator and DataAnalysisAgent use the ReAct (Reasoning + Acting) pattern:
-
-**ReAct Loop Structure:**
-```
-Question: User's natural language query
-Thought: Agent reasons about what to do
-Action: Selects a tool from available tools
-Action Input: Formats input as JSON string
-Observation: Receives tool execution result
-... (loop continues until solution found)
-Thought: I now know the final answer
-Final Answer: Provides comprehensive response
-```
-
-**Key Implementation Details:**
-- **Prompt Engineering**: Detailed prompts guide agent behavior, including tool selection guidelines and JSON formatting instructions
-- **Error Handling**: `handle_parsing_errors=True` in AgentExecutor allows graceful recovery from malformed tool inputs
-- **Iteration Limits**: `max_iterations=20` prevents infinite loops, `max_execution_time=120` ensures timely responses
-- **Tool Binding**: `llm.bind_tools()` creates tool-calling capable LLM, enabling structured tool invocation
-
-### Tool System Architecture
-
-**Tool Categories:**
-
-1. **Query Tools** (5 tools): Direct database queries
-   - Execute DuckDB SQL on Parquet files
-   - Return structured JSON with data and statistics
-   - Support filtering, sorting, and aggregation
-
-2. **Exploration Tools** (3 tools): Data discovery
-   - List available fields, years, authors
-   - Help agent understand data schema
-   - Enable exploratory queries
-
-3. **Analysis Tools** (3 tools): Statistical analysis
-   - Trend analysis over time
-   - Distribution analysis
-   - Pattern detection
-
-4. **Communication Tools** (1 tool): User interaction
-   - Ask clarifying questions
-   - Gather missing information
-
-**Tool Execution Flow:**
-```
-Agent → Tool Function → QueryExecutor → DuckDB → Parquet Files
-                                    ↓
-                              Result DataFrame
-                                    ↓
-                              JSON Serialization
-                                    ↓
-                              Agent Observation
-```
-
-### Visualization Generation Strategies
-
-**Strategy Selection Logic:**
-
-```python
-if chart_type == "bar" and data_structure_matches_template:
-    # Strategy 1: Template-based
-    spec = create_bar_chart(data, x_field, y_field, title)
-elif chart_type in ["bar", "line", "histogram"]:
-    # Strategy 2: LLM-based generation
-    spec = _generate_with_llm(analysis_results, chart_type)
-else:
-    # Strategy 3: Code execution
-    spec = execute_visualization_code(custom_code, data)
-```
-
-**Template-Based Generation:**
-- Fast and reliable for common chart types
-- Ensures consistent interactive features
-- Uses UUID-based selection names to prevent conflicts
-- Automatically configures tooltips, brush, and click selections
-
-**LLM-Based Generation:**
-- Handles complex or unexpected data structures
-- Generates complete Vega-Lite specifications from scratch
-- Falls back to simple template if LLM generation fails
-
-**Code Execution:**
-- Maximum flexibility for custom visualizations
-- Safe execution environment with controlled namespace
-- Used primarily for visualization enhancement requests
-- Code must output `vega_spec` variable
-
-### Memory Management
-
-**ConversationBufferWindowMemory:**
-- Window size: 300 messages (orchestrator), 5 messages (data agent)
-- Automatically managed by LangChain's AgentExecutor
-- Memory key: `"chat_history"` (injected into prompt context)
-- Input/Output keys: `"input"` and `"output"` for proper message tracking
-
-**Visualization Tracking:**
-- Orchestrator maintains `last_viz_spec` attribute
-- Tracking tools wrap visualization agent tools
-- Captures spec from tool output automatically
-- Enables context-aware visualization improvements
-
-### Data Processing Pipeline
-
+### System Workflow Summary
 **Query Execution Flow:**
 ```
 User Query (Natural Language)
@@ -575,16 +446,6 @@ Template/LLM/Code Execution → Vega-Lite Spec
     ↓
 Frontend Rendering
 ```
-
-**Efficiency Optimizations:**
-- DuckDB columnar processing for fast Parquet queries
-- No full dataset loading (queries run directly on files)
-- Batch processing for large result sets
-- Caching of filtered paper IDs for repeated queries
-- Unique selection names prevent chart conflicts
-
-### System Workflow Summary
-
 **Complete Request Flow:**
 
 1. **User Input** → Frontend sends natural language query to `/api/chat/message`
