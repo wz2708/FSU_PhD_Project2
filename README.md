@@ -366,6 +366,7 @@ Users can ask questions in natural language, such as:
 All charts support:
 - **Hovering**: Tooltips show detailed information
 - **Click Selection**: Point selection for highlighting
+- **Filer Selection**: Filter X-asis for choosing and highlighting 
 - **Responsive Sizing**: Charts adapt to container size
 
 ### Chart Types
